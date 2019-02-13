@@ -1,0 +1,80 @@
+<div id='AcronymMaster'>
+    <div id='Header'>
+        <div id='Buttons'>
+            <input type='button' value='Make Request' v-on:click="MakeRequest();" />
+        </div>
+        <div id='Search'>
+            <input type="text" placeholder="Enter Search Here..." v-model.trim="qry" v-on:keyup="EnterCheck" />
+            <input type="button" value="Go" v-on:click="GetResults('Title', qry, 32);" />
+        </div>
+    </div>
+    <div id='Main'>
+        <div id='SideNav'>
+            <div class='section'>
+                <div class='sectionTitle'>
+                    Categories
+                    <div id="ShowCategories" class='ShowHideArrow ShowArrow' v-on:click="MenuHandler('ShowCategories');">
+                        <img src="/sites/acronyms/siteassets/downArrow.png" width="20"/>
+                    </div>
+                    <div id="HideCategories" class='ShowHideArrow' v-on:click="MenuHandler('HideCategories');">
+                        <img src="/sites/acronyms/siteassets/upArrow.png" width="20" />
+                    </div>
+                </div>
+                <div class="sectionItems" v-for="cat in categories" v-if="categories.length > 0">
+                    <div class='title' data-id='{{ cat.ID }}' v-cloak v-on:click="CategoryClick('Category', cat);" v-bind:class="{ active: cat.ID == selectedCategory }">
+                        {{ cat.Title }}
+                        <div class="edit" title="Clear Filter" v-show="selectedCategory === cat.ID" v-on:click.stop="ClearCategoryFilter(cat);">
+                            <img src="/sites/classifieds/siteassets/delete.png" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id='Body'>
+            <div id="Alphabet">
+                <div v-on:click="LetterClick('');" v-bind:class="{ selected: (selectedLetter.length === 0) }">All</div>
+                <div v-for="letter in letters" v-on:click="LetterClick(letter.value);" v-bind:class="{ selected: letter.value == selectedLetter }">
+                    {{ letter.value }}
+                </div>
+            </div>
+            <div class='header'>Results:</div>
+            <div class='norecords' v-if='(results.length === 0)&&(isLoading === false)'>Sorry, no acronyms found for this criteria</div>
+            <div class="Loading" v-show="isLoading">
+                <img align="absmiddle" alt="Loading ..." src="/_layouts/15/images/hig_progcircle_loading24.gif" border="0" /> Loading Acronyms ...
+            </div>
+            <div class="item" v-for="rec in results" v-on:click="GetItem(rec.ID, 'View');">
+                <b>{{ rec.Title }}</b>:<br />
+                {{ rec.Definition }}<br /><br />
+                <b>Category: </b><br />
+                {{ rec.CategoryTitle }}
+            </div>            
+        </div>
+    </div>
+    <div id='FormBackDrop' v-if='requestObj != null'>
+        <div id='RequestForm'>
+            <h1>Acronym Request</h1>
+            <input type="button" id='CloseBtn' title='Close' value="X" v-on:click="CancelRequestClick();">
+            <label id="MessageLabel" v-show="errMsg.length > 0" v-html="errMsg"></label><br />        
+            <b>Letters:</b> <br />
+            <input type='text' placeholder="Enter acronym letters..." v-model.trim="requestObj.Title" /><br />
+            <b>Definition: </b> <br />
+            <input type='text' placeholder="Define acronym..." v-model.trim="requestObj.Definition" /><br />
+            <b>Category: </b> <br />
+            <select v-model="requestObj.CategoryId">
+                <option v-for="cat in categories" v-bind:value="cat.ID">{{ cat.Title }}</option>
+            </select>
+            <div id='FormButtons'>
+                <div class="Uploading" v-show="isSaving">
+                    <img align="absmiddle" alt="Loading ..." src="/_layouts/15/images/hig_progcircle_loading24.gif" border="0" /> Saving ...
+                </div>
+                <input type="button" value="Save" v-on:click="SaveRequestClick();" v-show="!isSaving">
+                <input type="button" value="Cancel" v-on:click="CancelRequestClick();" v-show="!isSaving">
+            </div>        
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="//unpkg.com/vue@2.5.2/dist/vue.min.js"></script>
+<script type="text/javascript" src="//unpkg.com/axios@0.5.4/dist/axios.min.js"></script>
+<script type="text/javascript" src="/sites/acronyms/siteassets/script.min.js"></script>
+<link type="text/css" rel="Stylesheet" href="/sites/acronyms/siteassets/style.min.css" />
